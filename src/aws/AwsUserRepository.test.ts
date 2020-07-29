@@ -1,6 +1,4 @@
 import {AwsUserRepository} from "./AwsUserRepository";
-import {FetcherMock} from "../test-helpers/FetcherMock";
-import {Fetcher} from "../IFetcher";
 // @ts-ignore
 import {FetchMock} from "jest-fetch-mock";
 require('jest-fetch-mock').enableMocks();

@@ -10,7 +10,8 @@
     "googleapis": "^57.0.0",
     "jest": "^26.1.0",
     "jest-fetch-mock": "^3.0.3",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "ts-jest": "^26.1.4"
   },
   "scripts": {
     "test": "jest"

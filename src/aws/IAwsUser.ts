@@ -1,5 +1,7 @@
 export interface IAwsUser {
-    name: string,
-    id: string,
-    tags: [[string,string]]
+    firstName: string,
+    lastName: string,
+    displayName: string,
+    email: string,
+    id: string
 }

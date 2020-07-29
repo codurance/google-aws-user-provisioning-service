@@ -51,7 +51,7 @@ export class AwsUserRepository implements IAwsUserRepository {
         };
     }
 
-    getAllUsers(): Promise<IAwsUser> {
-        return undefined;
+    async getAllUsers(): Promise<IAwsUser[]> {
+        return [];
     }
 }

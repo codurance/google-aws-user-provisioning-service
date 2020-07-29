@@ -3,7 +3,7 @@ import {IGoogleUserSource} from "./IGoogleUserSource";
 import {IGoogleUser} from "./IGoogleUser";
 
 class GoogleUserSource implements IGoogleUserSource {
-    async getUsers(): Promise<IGoogleUser> {
+    async getUsers(): Promise<IGoogleUser[]> {
         const auth = new google.auth.JWT({
             keyFile: 'credentials.json',
             scopes: ['https://www.googleapis.com/auth/admin.directory.user.readonly'],
@@ -14,12 +14,14 @@ class GoogleUserSource implements IGoogleUserSource {
         let usersResult = await service.users.list({
             customer: 'C03l8erv8'
         });
-        return usersResult.data.users.map((u: any) => ({
+        const users: IGoogleUser[] = usersResult.data.users.map((u: any) => ({
             primaryEmail: u.primaryEmail,
-            name: u.name.fullName,
+            fullName: u.name.fullName,
+            firstName: u.name.firstName,
+            lastName: u.name.lastName,
             id: u.id,
-            groupMemberships: []
         } as IGoogleUser));
+        return users;
     }
 }
 

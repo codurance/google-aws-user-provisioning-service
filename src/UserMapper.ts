@@ -6,9 +6,18 @@ export class UserMapper {
                 private googleUserRepo: IGoogleUserSource) {
     }
 
-
     public async mapUsersFromGoogleToAws(): Promise<void> {
-
+        const googleUsers = await this.googleUserRepo.getUsers();
+        const allAwsUsers = await this.awsUserRepo.getAllUsers();
+        for(let user of googleUsers) {
+            if(allAwsUsers.find(u => u.email === user.primaryEmail))
+                continue;
+            await this.awsUserRepo.createUser(
+                user.firstName,
+                user.lastName,
+                user.fullName,
+                user.primaryEmail
+            );
+        }
     }
-
 }
