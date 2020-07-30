@@ -1,5 +1,5 @@
-import {IGoogleUserSource} from "../google/IGoogleUserSource";
-import {IGoogleUser} from "../google/IGoogleUser";
+import {IGoogleUserSource} from "../google/users/IGoogleUserSource";
+import {IGoogleUser} from "../google/users/IGoogleUser";
 
 export class InMemoryGoogleUserSource implements IGoogleUserSource {
     public allUsers: IGoogleUser[] = [];

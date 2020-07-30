@@ -1,14 +1,14 @@
-const {google} = require('googleapis');
 import {IGoogleUserSource} from "./IGoogleUserSource";
 import {IGoogleUser} from "./IGoogleUser";
-import {IGoogleApiConfig} from "./IGoogleApiConfig"
+import {IGoogleApiConfig} from "../IGoogleApiConfig"
+import {getGoogleDirectoryService} from "../GetGoogleDirectoryService";
 
 export class GoogleUserSource implements IGoogleUserSource {
     constructor(private googleApiConfig: IGoogleApiConfig) {
     }
 
-    async getUsers(): Promise<IGoogleUser[]> {
-        const service = this.getGoogleDirectoryService();
+    public async getUsers(): Promise<IGoogleUser[]> {
+        const service = getGoogleDirectoryService(this.googleApiConfig);
         let usersResult = await service.users.list(this.getCustomerParam());
         const users: IGoogleUser[] = usersResult.data.users.map((u: any) => ({
             primaryEmail: u.primaryEmail,
@@ -27,7 +27,7 @@ export class GoogleUserSource implements IGoogleUserSource {
     }
 
     async getGroups(): Promise<any> {
-        const service = this.getGoogleDirectoryService();
+        const service = getGoogleDirectoryService(this.googleApiConfig);
         let groupResult = await service.groups.list(this.getCustomerParam());
         return groupResult.data.groups.map((g: any) => ({
             id: g.id,
@@ -37,7 +37,7 @@ export class GoogleUserSource implements IGoogleUserSource {
     }
 
     async getGroupMemberships(groupId: string): Promise<any> {
-        const service = this.getGoogleDirectoryService();
+        const service = getGoogleDirectoryService(this.googleApiConfig);
         let memberResult = await service.members.list({
             groupKey: groupId
         });
@@ -46,27 +46,6 @@ export class GoogleUserSource implements IGoogleUserSource {
             id: m.id,
             email: m.id
         }));
-    }
-
-    private getGoogleDirectoryService() {
-        const auth = this.getGoogleAuth();
-        const service = google.admin({version: 'directory_v1', auth: auth});
-        return service;
-    }
-
-    private getGoogleAuth() {
-        const auth = new google.auth.JWT({
-            keyFile: 'credentials.json',
-            scopes: [
-                'https://www.googleapis.com/auth/admin.directory.user.readonly',
-                'https://www.googleapis.com/auth/admin.directory.group.member.readonly',
-                'https://www.googleapis.com/auth/admin.directory.group.readonly',
-            ],
-            subject: this.googleApiConfig.authenticationSubject,
-        });
-        let configJson = Buffer.from(this.googleApiConfig.base64EncodedKeyFile, 'base64').toString();
-        auth.fromJSON(JSON.parse(configJson));
-        return auth;
     }
 }
 

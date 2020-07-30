@@ -1,8 +1,9 @@
-import {IAwsGroup} from "../IAwsGroup";
+import {IAwsGroup} from "./IAwsGroup";
 import {IAwsConfig} from "../IAwsConfig";
 import {IFetcher} from "../../IFetcher";
+import {IAwsGroupRepository} from "./IAwsGroupRepository";
 
-export class AwsGroupRepository {
+export class AwsGroupRepository implements IAwsGroupRepository{
     constructor(private awsConfig: IAwsConfig, private fetcher: IFetcher) {
     }
 
@@ -17,18 +18,18 @@ export class AwsGroupRepository {
         let responseText = response.body;
         const responseBody = JSON.parse(responseText);
         const groups: IAwsGroup[] = responseBody.Resources.map((u: any) => ({
-            displayName: u.displayName
+            displayName: u.displayName,
+            id: u.id
         }));
         return groups;
     }
 
     async createGroup(name: string, description: string): Promise<string> {
-        let scimCreateUser = {
+        let scimCreateGroup = {
             schemas: [
                 'urn:ietf:params:scim:schemas:core:2.0:Group'
             ],
-            displayName: name,
-            description
+            displayName: name
         };
 
         let targetUrl = this.awsConfig.scimUrl + 'Groups';
@@ -36,7 +37,7 @@ export class AwsGroupRepository {
             url: targetUrl,
             method: 'POST',
             headers: this.getAuthHeaders(),
-            body: JSON.stringify(scimCreateUser)
+            body: JSON.stringify(scimCreateGroup)
         });
 
         const responseBody = JSON.parse(response.body);
@@ -53,5 +54,15 @@ export class AwsGroupRepository {
             'Authorization': `Bearer ${this.awsConfig.scimToken}`,
             'Content-Type': 'application/scim+json'
         };
+    }
+
+    public async deleteGroup(id: string): Promise<void> {
+        let targetUrl = `${this.awsConfig.scimUrl}Groups/${id}`;
+        let result = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'DELETE',
+            headers: this.getAuthHeaders()
+        });
+
     }
 }

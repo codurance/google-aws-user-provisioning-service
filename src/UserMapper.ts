@@ -1,5 +1,5 @@
 import {IAwsUserRepository} from "./aws/users/IAwsUserRepository";
-import {IGoogleUserSource} from "./google/IGoogleUserSource";
+import {IGoogleUserSource} from "./google/users/IGoogleUserSource";
 import {ILogger} from "./logging/ILogger";
 
 export class UserMapper {

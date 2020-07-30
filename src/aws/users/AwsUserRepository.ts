@@ -2,7 +2,7 @@ import {IAwsUser} from "./IAwsUser";
 import {ICreateUserResult} from "./ICreateUserResult";
 import {IAwsUserRepository} from "./IAwsUserRepository";
 import {IAwsConfig} from "../IAwsConfig";
-import {IAwsGroup} from "../IAwsGroup";
+import {IAwsGroup} from "../groups/IAwsGroup";
 import {IFetcher} from "../../IFetcher";
 const fetch = require('node-fetch');
 const Headers = fetch.Headers;
@@ -60,7 +60,8 @@ export class AwsUserRepository implements IAwsUserRepository {
             headers: this.getAuthHeaders()
         });
 
-        let responseText = await response.body;
+        let responseText = response.body;
+
         const responseBody = JSON.parse(responseText);
         const users: IAwsUser[] = responseBody.Resources.map((u: any) => ({
             firstName: u.name.givenName,
@@ -77,8 +78,13 @@ export class AwsUserRepository implements IAwsUserRepository {
             'Content-Type': 'application/scim+json'
         };
     }
-    
-    deleteUser(id: string): Promise<void> {
-        return undefined;
+
+    async deleteUser(id: string): Promise<void> {
+        let targetUrl = `${this.awsConfig.scimUrl}Users/${id}`;
+        await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'DELETE',
+            headers: this.getAuthHeaders()
+        });
     }
 }

@@ -1,11 +1,10 @@
 import {IAwsUserRepository} from "../aws/users/IAwsUserRepository";
 import {IAwsUser} from "../aws/users/IAwsUser";
 import {ICreateUserResult} from "../aws/users/ICreateUserResult";
-import {IAwsGroup} from "../aws/IAwsGroup";
+import {IAwsGroup} from "../aws/groups/IAwsGroup";
 
 export class InMemoryAwsUserRepo implements IAwsUserRepository {
     public allUsers: IAwsUser[] = [];
-    public allGroups: IAwsGroup[] = [];
     public newUserId: string;
 
     async createUser(firstName: string, lastName: string, displayName: string, email: string): Promise<ICreateUserResult> {
@@ -24,10 +23,6 @@ export class InMemoryAwsUserRepo implements IAwsUserRepository {
 
     async getAllUsers(): Promise<IAwsUser[]> {
         return [...this.allUsers];
-    }
-
-    getAllGroups(): Promise<IAwsGroup[]> {
-        return undefined;
     }
 
     async deleteUser(id: string): Promise<void> {

@@ -88,5 +88,13 @@ describe('AWS User repository', () => {
         assertAuthWasPassed(requestInfo);
     });
 
+    test('can delete user', async () => {
+        await repo.deleteUser('test');
+
+        const requestInfo = fetcher.assertOneRequestAndReturn();
+        expect(requestInfo.url).toEqual('HTTP://SCIMURL/Users/test');
+        expect(requestInfo.method).toEqual('DELETE');
+        assertAuthWasPassed(requestInfo);
+    });
 });
 

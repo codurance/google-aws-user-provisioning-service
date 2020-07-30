@@ -1,6 +1,6 @@
 import {ICreateUserResult} from "./ICreateUserResult";
 import {IAwsUser} from "./IAwsUser";
-import {IAwsGroup} from "../IAwsGroup";
+import {IAwsGroup} from "../groups/IAwsGroup";
 
 export interface IAwsUserRepository {
     getAllUsers(): Promise<IAwsUser[]>;

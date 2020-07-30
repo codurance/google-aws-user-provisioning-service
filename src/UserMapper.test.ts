@@ -2,7 +2,7 @@ import {UserMapper} from "./UserMapper";
 import {InMemoryGoogleUserSource} from "./test-util/InMemoryGoogleUserSource";
 import {InMemoryAwsUserRepo} from "./test-util/InMemoryAwsUserRepo";
 import {IAwsUser} from "./aws/users/IAwsUser";
-import {IGoogleUser} from "./google/IGoogleUser";
+import {IGoogleUser} from "./google/users/IGoogleUser";
 import {LoggerSpy} from "./test-util/LoggerSpy";
 
 describe('UserMapper', async() => {
