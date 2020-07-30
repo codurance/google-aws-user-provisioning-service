@@ -1,4 +1,3 @@
-import {AwsUserRepository} from "../users/AwsUserRepository";
 import {MockFetcher} from "../../test-util/MockFetcher";
 import {AwsGroupRepository} from "./AwsGroupRepository";
 import {assertAuthWasPassed} from "../test-util/assertAuthWasPassed";
@@ -79,18 +78,32 @@ describe('AwsGroupRepository', () => {
         assertAuthWasPassed(requestInfo);
     });
 
-    test('can add member to group', async () => {
-        await repo.addMemberToGroup('userId', 'groupId');
-
+    function assertGroupMemberOperation(op: string) {
         const requestInfo = fetcher.assertOneRequestAndReturn();
         expect(requestInfo.url).toEqual('HTTP://SCIMURL/Groups/groupId');
         expect(requestInfo.method).toEqual('PATCH');
         let body = JSON.parse(requestInfo.body);
         expect(body.Operations.length).toEqual(1);
-        expect(body.Operations[0].op).toEqual('add');
+        expect(body.Operations[0].op).toEqual(op);
         expect(body.Operations[0].path).toEqual('members');
         expect(body.Operations[0].value.length).toEqual(1);
         expect(body.Operations[0].value[0].value).toEqual('userId');
         assertAuthWasPassed(requestInfo);
-    })
+    }
+
+    test('can add member to group', async () => {
+        await repo.addMemberToGroup('userId', 'groupId');
+        assertGroupMemberOperation('add');
+    });
+
+    test('can remove all group members', async () => {
+        await repo.removeGroupMembers('groupId');
+        const requestInfo = fetcher.assertOneRequestAndReturn();
+        expect(requestInfo.url).toEqual('HTTP://SCIMURL/Groups/groupId');
+        expect(requestInfo.method).toEqual('PATCH');
+        let body = JSON.parse(requestInfo.body);
+        expect(body.Operations.length).toEqual(1);
+        expect(body.Operations[0].op).toEqual('remove');
+        expect(body.Operations[0].path).toEqual('members');
+    });
 });

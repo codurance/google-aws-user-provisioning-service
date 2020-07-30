@@ -28,4 +28,8 @@ export class InMemoryAwsGroupRepo implements IAwsGroupRepository{
         this.newMemberships.push({userId, groupId})
     }
 
+    async removeGroupMembers(groupId: string): Promise<void> {
+        this.newMemberships = this.newMemberships.filter(m => m.groupId == groupId);
+    }
+
 }

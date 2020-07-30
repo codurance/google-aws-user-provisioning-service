@@ -45,7 +45,7 @@ export class GroupMapper {
                 continue;
             }
 
-            await this.logger.logInfo(`Google group ${googleGroup.name} does not exist in AWS, creating.`)
+            await this.logger.logInfo(`Google group ${googleGroup.name} does not exist in AWS, creating.`);
             await this.awsGroupRepo.createGroup(googleGroup.name, googleGroup.description);
         }
     }
@@ -61,8 +61,10 @@ export class GroupMapper {
         for (let googleGroup of groupsForTransfer) {
             let members = await this.googleRepo.getGroupMemberships(googleGroup.id);
             let matchingAwsGroup = awsGroups.find(g => g.displayName === googleGroup.name);
+            await this.awsGroupRepo.removeGroupMembers(matchingAwsGroup.id);
             for (let member of members) {
                 let thisMember = allAwsUsers.find(u => u.email === member.email);
+                await this.logger.logInfo(`Added ${thisMember.email} to group ${matchingAwsGroup.displayName}.`)
                 await this.awsGroupRepo.addMemberToGroup(thisMember.id, matchingAwsGroup.id);
             }
         }

@@ -128,6 +128,7 @@ describe('Group mapper', () => {
         expect(awsGroupRepo.newMemberships.length).toEqual(1);
         expect(awsGroupRepo.newMemberships[0].userId).toEqual('AWS_JOHN_ID');
         expect(awsGroupRepo.newMemberships[0].groupId).toEqual('AWS_GROUP_ID');
+        expect(logger.loggedMessages[1]).toEqual('Added john@smith.com to group AWSAdmins.')
     });
 
     function givenThereIsAnAdminGroupInGoogle() {
@@ -250,4 +251,20 @@ describe('Group mapper', () => {
         await groupMapper.mapGroupsFromGoogleToAws();
         expect(awsGroupRepo.newMemberships.length).toEqual(0);
     });
+
+    test('it clears all existing memberships from AWS', async () => {
+        googleGroupRepo.allGroups = [{
+            id: 'g1',
+            name: 'AWSAdmins',
+            description: ''
+        }];
+
+        awsGroupRepo.newMemberships.push({
+            userId: 'TEST',
+            groupId: 'g1'
+        });
+
+        await groupMapper.mapGroupsFromGoogleToAws();
+        expect(awsGroupRepo.newMemberships.length).toEqual(0);
+    })
 });

@@ -3,7 +3,7 @@ import {IAwsConfig} from "../IAwsConfig";
 import {IFetcher} from "../../IFetcher";
 import {IAwsGroupRepository} from "./IAwsGroupRepository";
 
-export class AwsGroupRepository implements IAwsGroupRepository{
+export class AwsGroupRepository implements IAwsGroupRepository {
     constructor(private awsConfig: IAwsConfig, private fetcher: IFetcher) {
     }
 
@@ -63,10 +63,21 @@ export class AwsGroupRepository implements IAwsGroupRepository{
     }
 
     async addMemberToGroup(userId: string, groupId: string): Promise<void> {
+        let request = this.createGroupMembershipPatchRequest('add', userId);
+        let targetUrl = `${this.awsConfig.scimUrl}Groups/${groupId}`;
+        await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'PATCH',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(request)
+        });
+    }
+
+    private createGroupMembershipPatchRequest(op: string, userId: string) {
         let request = {
             Operations: [
                 {
-                    op: 'add',
+                    op: op,
                     path: 'members',
                     value: [
                         {
@@ -76,13 +87,24 @@ export class AwsGroupRepository implements IAwsGroupRepository{
                 }
             ]
         };
+        return request;
+    }
+
+    async removeGroupMembers(groupId: string): Promise<void> {
+        let request = {
+            Operations: [
+                {
+                    op: 'remove',
+                    path: 'members'
+                }
+            ]
+        };
         let targetUrl = `${this.awsConfig.scimUrl}Groups/${groupId}`;
-        let result = await this.fetcher.fetch({
+        await this.fetcher.fetch({
             url: targetUrl,
             method: 'PATCH',
             headers: this.getAuthHeaders(),
             body: JSON.stringify(request)
         });
-        return undefined;
     }
 }
