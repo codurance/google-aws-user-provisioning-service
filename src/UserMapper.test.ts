@@ -4,6 +4,7 @@ import {IAwsUser} from "./aws/IAwsUser";
 import {IGoogleUserSource} from "./google/IGoogleUserSource";
 import {IGoogleUser} from "./google/IGoogleUser";
 import {IAwsUserRepository} from "./aws/IAwsUserRepository";
+import {IAwsGroup} from "./aws/IAwsGroup";
 
 describe('UserMapper', async() => {
     let awsUserRepo: InMemoryAwsUserRepo;
@@ -114,6 +115,10 @@ class InMemoryAwsUserRepo implements IAwsUserRepository {
 
     async getAllUsers(): Promise<IAwsUser[]> {
         return [...this.allUsers];
+    }
+
+    getAllGroups(): Promise<IAwsGroup[]> {
+        return undefined;
     }
 
 }

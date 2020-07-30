@@ -1,17 +1,24 @@
 {
   "compilerOptions": {
-    "module": "system",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
     "noImplicitAny": true,
-    "removeComments": true,
-    "preserveConstEnums": true,
+    "moduleResolution": "node",
     "sourceMap": true,
-    "outFile": "dist/root.js",
-    "lib": ["DOM"]
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "node_modules/*"
+      ]
+    }
   },
   "include": [
-    "src/**/*"
+    "src/**/*.ts"
   ],
   "exclude": [
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "node_modules"
   ]
 }

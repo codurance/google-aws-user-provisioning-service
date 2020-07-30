@@ -1,19 +1,15 @@
-const google = require('googleapis');
+const {google} = require('googleapis');
 import {IGoogleUserSource} from "./IGoogleUserSource";
 import {IGoogleUser} from "./IGoogleUser";
+import {IGoogleApiConfig} from "./IGoogleApiConfig"
 
-class GoogleUserSource implements IGoogleUserSource {
+export class GoogleUserSource implements IGoogleUserSource {
+    constructor(private googleApiConfig: IGoogleApiConfig) {
+    }
+
     async getUsers(): Promise<IGoogleUser[]> {
-        const auth = new google.auth.JWT({
-            keyFile: 'credentials.json',
-            scopes: ['https://www.googleapis.com/auth/admin.directory.user.readonly'],
-            subject: "paul@truertech.com",
-        });
-
-        const service = google.admin({version: 'directory_v1', auth: auth});
-        let usersResult = await service.users.list({
-            customer: 'C03l8erv8'
-        });
+        const service = this.getGoogleDirectoryService();
+        let usersResult = await service.users.list(this.getCustomerParam());
         const users: IGoogleUser[] = usersResult.data.users.map((u: any) => ({
             primaryEmail: u.primaryEmail,
             fullName: u.name.fullName,
@@ -22,6 +18,55 @@ class GoogleUserSource implements IGoogleUserSource {
             id: u.id,
         } as IGoogleUser));
         return users;
+    }
+
+    private getCustomerParam(): { customer: string } {
+        return {
+            customer: this.googleApiConfig.googleAppOrganisationId
+        };
+    }
+
+    async getGroups(): Promise<any> {
+        const service = this.getGoogleDirectoryService();
+        let groupResult = await service.groups.list(this.getCustomerParam());
+        return groupResult.data.groups.map((g: any) => ({
+            id: g.id,
+            name: g.name,
+            description: g.description
+        }));
+    }
+
+    async getGroupMemberships(groupId: string): Promise<any> {
+        const service = this.getGoogleDirectoryService();
+        let memberResult = await service.members.list({
+            groupKey: groupId
+        });
+        let members = memberResult.data.members || [];
+        return members.map((m: any) => ({
+            id: m.id,
+            email: m.id
+        }));
+    }
+
+    private getGoogleDirectoryService() {
+        const auth = this.getGoogleAuth();
+        const service = google.admin({version: 'directory_v1', auth: auth});
+        return service;
+    }
+
+    private getGoogleAuth() {
+        const auth = new google.auth.JWT({
+            keyFile: 'credentials.json',
+            scopes: [
+                'https://www.googleapis.com/auth/admin.directory.user.readonly',
+                'https://www.googleapis.com/auth/admin.directory.group.member.readonly',
+                'https://www.googleapis.com/auth/admin.directory.group.readonly',
+            ],
+            subject: this.googleApiConfig.authenticationSubject,
+        });
+        let configJson = Buffer.from(this.googleApiConfig.base64EncodedKeyFile, 'base64').toString();
+        auth.fromJSON(JSON.parse(configJson));
+        return auth;
     }
 }
 

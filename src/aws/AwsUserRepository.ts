@@ -2,7 +2,10 @@ import {IAwsUser} from "./IAwsUser";
 import {ICreateUserResult} from "./ICreateUserResult";
 import {IAwsUserRepository} from "./IAwsUserRepository";
 import {IAwsConfig} from "./IAwsConfig";
-const request = require('request');
+import {IAwsGroup} from "./IAwsGroup";
+import {IFetcher} from "../IFetcher";
+const fetch = require('node-fetch');
+const Headers = fetch.Headers;
 /*
     This repo implementation uses the SCIM protocol described at
     Ref: https://tools.ietf.org/html/rfc7644
@@ -10,7 +13,7 @@ const request = require('request');
     AWS SCIM: https://docs.aws.amazon.com/singlesignon/latest/userguide/provision-automatically.html#how-to-with-scim
 */
 export class AwsUserRepository implements IAwsUserRepository {
-    constructor(private awsConfig: IAwsConfig) {
+    constructor(private awsConfig: IAwsConfig, private fetcher: IFetcher) {
     }
 
     async createUser(firstName: string, lastName: string, displayName: string, email: string): Promise<ICreateUserResult> {
@@ -34,16 +37,14 @@ export class AwsUserRepository implements IAwsUserRepository {
             ]
         };
 
-        const response = await fetch(this.awsConfig.scimUrl, {
+        const response = await this.fetcher.fetch({
+            url: this.awsConfig.scimUrl + 'Users',
             method: 'POST',
-            headers: new Headers({
-                'Authentication': `Bearer ${this.awsConfig.scimToken}`,
-                'Content-Type': 'application/scim+json'
-            }),
+            headers: this.getAuthHeaders(),
             body: JSON.stringify(scimCreateUser)
         });
 
-        const responseBody = JSON.parse(await response.text());
+        const responseBody = JSON.parse(response.body);
 
         return {
             successful: true,
@@ -52,6 +53,70 @@ export class AwsUserRepository implements IAwsUserRepository {
     }
 
     async getAllUsers(): Promise<IAwsUser[]> {
-        return [];
+        let targetUrl = this.awsConfig.scimUrl + 'Users?itemsPerPage=1000';
+        const response = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'GET',
+            headers: this.getAuthHeaders()
+        });
+
+        let responseText = await response.body;
+        const responseBody = JSON.parse(responseText);
+        const users: IAwsUser[] = responseBody.Resources.map((u: any) => ({
+            firstName: u.name.givenName,
+            lastName: u.name.familyName,
+            displayName: u.displayName,
+            email: u.userName
+        }));
+        return users;
+    }
+
+    private getAuthHeaders(): Record<string, string> {
+        return {
+            'Authorization': `Bearer ${this.awsConfig.scimToken}`,
+            'Content-Type': 'application/scim+json'
+        };
+    }
+
+    async getAllGroups(): Promise<IAwsGroup[]> {
+        let targetUrl = this.awsConfig.scimUrl + 'Groups?itemsPerPage=1000';
+        const response = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'GET',
+            headers: this.getAuthHeaders()
+        });
+
+        let responseText = response.body;
+        const responseBody = JSON.parse(responseText);
+        const groups: IAwsGroup[] = responseBody.Resources.map((u: any) => ({
+            displayName: u.displayName
+        }));
+        return groups;
+    }
+
+    async createGroup(name: string, description: string): Promise<string> {
+        let scimCreateUser = {
+            schemas: [
+                'urn:ietf:params:scim:schemas:core:2.0:Group'
+            ],
+            displayName: name,
+            description
+        };
+
+        let targetUrl = this.awsConfig.scimUrl + 'Groups';
+        const response = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(scimCreateUser)
+        });
+
+        const responseBody = JSON.parse(response.body);
+
+        return responseBody.id;
+    }
+
+    async createGroupMembership(userId: string, groupId: string): Promise<void> {
+        return;
     }
 }
