@@ -45,10 +45,6 @@ export class AwsGroupRepository implements IAwsGroupRepository{
         return responseBody.id;
     }
 
-    async createGroupMembership(userId: string, groupId: string): Promise<void> {
-        return;
-    }
-
     private getAuthHeaders(): Record<string, string> {
         return {
             'Authorization': `Bearer ${this.awsConfig.scimToken}`,
@@ -64,5 +60,29 @@ export class AwsGroupRepository implements IAwsGroupRepository{
             headers: this.getAuthHeaders()
         });
 
+    }
+
+    async addMemberToGroup(userId: string, groupId: string): Promise<void> {
+        let request = {
+            Operations: [
+                {
+                    op: 'add',
+                    path: 'members',
+                    value: [
+                        {
+                            value: userId
+                        }
+                    ]
+                }
+            ]
+        };
+        let targetUrl = `${this.awsConfig.scimUrl}Groups/${groupId}`;
+        let result = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'PATCH',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(request)
+        });
+        return undefined;
     }
 }

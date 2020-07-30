@@ -4,4 +4,5 @@ export interface IAwsGroupRepository {
     getAllGroups(): Promise<IAwsGroup[]>;
     createGroup(name: string, description: string): Promise<string>;
     deleteGroup(id: string): Promise<void>;
+    addMemberToGroup(userId: string, groupId: string): Promise<void>;
 }
