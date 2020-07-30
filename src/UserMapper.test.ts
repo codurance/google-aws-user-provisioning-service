@@ -1,20 +1,21 @@
 import {UserMapper} from "./UserMapper";
-import {ICreateUserResult} from "./aws/ICreateUserResult";
-import {IAwsUser} from "./aws/IAwsUser";
-import {IGoogleUserSource} from "./google/IGoogleUserSource";
+import {InMemoryGoogleUserSource} from "./test-util/InMemoryGoogleUserSource";
+import {InMemoryAwsUserRepo} from "./test-util/InMemoryAwsUserRepo";
+import {IAwsUser} from "./aws/users/IAwsUser";
 import {IGoogleUser} from "./google/IGoogleUser";
-import {IAwsUserRepository} from "./aws/IAwsUserRepository";
-import {IAwsGroup} from "./aws/IAwsGroup";
+import {LoggerSpy} from "./test-util/LoggerSpy";
 
 describe('UserMapper', async() => {
     let awsUserRepo: InMemoryAwsUserRepo;
     let googleUserSource: InMemoryGoogleUserSource;
     let userMapper: UserMapper;
+    let logger: LoggerSpy;
 
     beforeEach(()=> {
         awsUserRepo = new InMemoryAwsUserRepo();
         googleUserSource = new InMemoryGoogleUserSource();
-        userMapper = new UserMapper(awsUserRepo, googleUserSource);
+        logger = new LoggerSpy();
+        userMapper = new UserMapper(awsUserRepo, googleUserSource, logger);
     });
 
     test('given a user exist in google but not in AWS it creates the user', async () => {
@@ -32,6 +33,8 @@ describe('UserMapper', async() => {
         expect(awsUserRepo.allUsers[0].lastName).toBe('smith');
         expect(awsUserRepo.allUsers[0].displayName).toBe('johnny smith');
         expect(awsUserRepo.allUsers[0].email).toBe('john@smith.com');
+
+        expect(logger.loggedMessages[0]).toEqual('Creating user johnny smith in AWS');
     });
 
     test('given multiple users exist in google but not in AWS it creates the users',async () => {
@@ -47,17 +50,20 @@ describe('UserMapper', async() => {
     });
 
     test('given the user already exists in AWS it does not try to create it again', async () => {
-        googleUserSource.allUsers = [googleUser('john@smith.com')];
+        googleUserSource.allUsers = [googleUser('john@smith.com', 'Johnny')];
         awsUserRepo.allUsers = [awsUser('john@smith.com')];
 
         await userMapper.mapUsersFromGoogleToAws();
 
+        expect(logger.loggedMessages[0]).toEqual('Skipping Johnny because the AWS user already exists.');
         expect(awsUserRepo.allUsers.length).toBe(1);
         expect(awsUserRepo.allUsers[0].email).toBe('john@smith.com');
     });
 
     test('given a user already exists in AWS it but the email does not match it still adds', async () => {
-        googleUserSource.allUsers = [googleUser('john@smith.com')];
+        googleUserSource.allUsers = [
+            googleUser('jane@doe.com'),
+            googleUser('john@smith.com')];
         awsUserRepo.allUsers = [awsUser('jane@doe.com')];
 
         await userMapper.mapUsersFromGoogleToAws();
@@ -67,58 +73,33 @@ describe('UserMapper', async() => {
         expect(awsUserRepo.allUsers[1].email).toBe('john@smith.com');
     });
 
-    function awsUser(email: string) {
+    test('given a user exists in AWS but not in google it deletes the user', async () => {
+        awsUserRepo.allUsers = [awsUser('jane@doe.com', 'Jane')];
+
+        await userMapper.mapUsersFromGoogleToAws();
+
+        expect(logger.loggedMessages[0]).toEqual('The AWS user Jane does not exist google, deleting.');
+        expect(awsUserRepo.allUsers.length).toBe(0);
+    });
+
+    function awsUser(email: string, displayName = ''): IAwsUser {
         return {
-            id: '',
+            id: Math.random().toString(),
             email: email,
-            displayName: '',
+            displayName: displayName,
             lastName: '',
             firstName: ''
         };
     }
 
-    function googleUser(primaryEmail: string) {
+    function googleUser(primaryEmail: string, fullName: string = ''): IGoogleUser {
         return {
-            id: '',
+            id: Math.random().toString(),
             primaryEmail: primaryEmail,
             firstName: '',
             lastName: '',
-            fullName: ''
+            fullName: fullName
         };
     }
 });
 
-class InMemoryGoogleUserSource implements IGoogleUserSource {
-    public allUsers: IGoogleUser[] = [];
-    async getUsers(): Promise<IGoogleUser[]> {
-        return this.allUsers;
-    }
-}
-
-class InMemoryAwsUserRepo implements IAwsUserRepository {
-    public allUsers: IAwsUser[] = [];
-    public newUserId: string;
-
-    async createUser(firstName: string, lastName: string, displayName: string, email: string): Promise<ICreateUserResult> {
-        this.allUsers.push({
-            firstName,
-            lastName,
-            displayName,
-            email,
-            id: this.newUserId
-        });
-        return {
-            id: this.newUserId,
-            successful: true,
-        }
-    }
-
-    async getAllUsers(): Promise<IAwsUser[]> {
-        return [...this.allUsers];
-    }
-
-    getAllGroups(): Promise<IAwsGroup[]> {
-        return undefined;
-    }
-
-}

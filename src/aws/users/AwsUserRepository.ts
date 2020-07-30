@@ -1,9 +1,9 @@
 import {IAwsUser} from "./IAwsUser";
 import {ICreateUserResult} from "./ICreateUserResult";
 import {IAwsUserRepository} from "./IAwsUserRepository";
-import {IAwsConfig} from "./IAwsConfig";
-import {IAwsGroup} from "./IAwsGroup";
-import {IFetcher} from "../IFetcher";
+import {IAwsConfig} from "../IAwsConfig";
+import {IAwsGroup} from "../IAwsGroup";
+import {IFetcher} from "../../IFetcher";
 const fetch = require('node-fetch');
 const Headers = fetch.Headers;
 /*
@@ -77,46 +77,8 @@ export class AwsUserRepository implements IAwsUserRepository {
             'Content-Type': 'application/scim+json'
         };
     }
-
-    async getAllGroups(): Promise<IAwsGroup[]> {
-        let targetUrl = this.awsConfig.scimUrl + 'Groups?itemsPerPage=1000';
-        const response = await this.fetcher.fetch({
-            url: targetUrl,
-            method: 'GET',
-            headers: this.getAuthHeaders()
-        });
-
-        let responseText = response.body;
-        const responseBody = JSON.parse(responseText);
-        const groups: IAwsGroup[] = responseBody.Resources.map((u: any) => ({
-            displayName: u.displayName
-        }));
-        return groups;
-    }
-
-    async createGroup(name: string, description: string): Promise<string> {
-        let scimCreateUser = {
-            schemas: [
-                'urn:ietf:params:scim:schemas:core:2.0:Group'
-            ],
-            displayName: name,
-            description
-        };
-
-        let targetUrl = this.awsConfig.scimUrl + 'Groups';
-        const response = await this.fetcher.fetch({
-            url: targetUrl,
-            method: 'POST',
-            headers: this.getAuthHeaders(),
-            body: JSON.stringify(scimCreateUser)
-        });
-
-        const responseBody = JSON.parse(response.body);
-
-        return responseBody.id;
-    }
-
-    async createGroupMembership(userId: string, groupId: string): Promise<void> {
-        return;
+    
+    deleteUser(id: string): Promise<void> {
+        return undefined;
     }
 }
