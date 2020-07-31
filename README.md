@@ -101,6 +101,8 @@ Run the following scripts to build and deploy. The lambda package will be create
 ```shell script
 yarn run build
 yarn run package
+cd deployment
+terraform init
 terraform apply
 ``` 
 
