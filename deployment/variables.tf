@@ -23,14 +23,6 @@ variable "aws_scim_url" {
   type = string
 }
 
-variable "tf_state_bucket_name" {
-  type = string
-}
-
-variable "tf_state_bucket_key" {
-  type = string
-}
-
 variable "aws_region" {
   type = string
 }
