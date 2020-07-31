@@ -11,7 +11,10 @@ This tool uses the GSuite Admin API (specifically the directory API) to load
 the users, groups, and group memberships from google and then uploads the data 
 into AWS through the SCIM API.
 
-# Google authentication
+# Authentication
+The code requires credentials to access AWS and Google.
+
+## Google authentication
 Accessing the GSuite Admin API is slightly different to a regular Google Cloud Platform API.
 A [Google Cloud Platform service account](https://developers.google.com/identity/protocols/oauth2/service-account) must first be created and then given domain wide 
 delegation within the google apps admin panel to allow access to apps resources.
@@ -50,11 +53,11 @@ The parts with *italics* are arbitrary identifier names
    1. Find google organization ID: https://play.google.com/work/adminsettings?pli=1
    1. This organization ID is required to make requests and is passed as an environment variable to the service
  
-## Useful links:
+### Useful links:
  - [NodeJS client for google API](https://github.com/googleapis/google-api-nodejs-client)
  - [Useful info on authenticating service accounts for apps use](https://github.com/googleapis/google-api-nodejs-client/issues/1884)
 
-# AWS Authentication
+## AWS Authentication
 AWS Authentication is pretty simple, it does not use IAM users as the API being used is not a standard amazon API. 
 To enable the SCIM API go to AWS SSO => Settings => Automatic Provisioning => Enable.
 
