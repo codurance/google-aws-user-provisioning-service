@@ -9,7 +9,7 @@ There is no AWS SSO API for creating users, only the SCIM API is supported.
 
 This tool uses the GSuite Admin API (specifically the directory API) to load 
 the users, groups, and group memberships from google and then uploads the data 
-into AWS through the SCIM API.
+into AWS through the SCIM API. Only groups within Google starting with "AWS" will be transferred.
 
 # Authentication
 The code requires credentials to access AWS and Google.
@@ -37,7 +37,7 @@ The parts with *italics* are arbitrary identifier names
       1. Go back to service accounts page
       1. Under domain wide delegation for the service account click View Client ID
       1. Write down Client ID for later
-      1. Create private key for service account (save for later)
+      1. Create private key for service account (save for later, used for ```GOOGLE_SERVICE_ACCOUNT_BASE64_KEY_FILE```)
    1. Google cloud platform admin console => APIs & Services => Dashboard
       1. Enable APIs and Services
       1. Admin SDK
@@ -51,8 +51,8 @@ The parts with *italics* are arbitrary identifier names
    ```https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.group.member.readonly,https://www.googleapis.com/auth/admin.directory.group.readonly```
    1. Authorize
    1. Find google organization ID: https://play.google.com/work/adminsettings?pli=1
-   1. This organization ID is required to make requests and is passed as an environment variable to the service
- 
+   1. This organization ID is required to make requests and is passed as an environment variable to the service (for ```GOOGLE_APP_ORGANISATION_ID```)
+ 1. Choose an email for a user that is not likely to be deleted in Google Apps for ```GOOGLE_AUTHENTICATION_SUBJECT```
 ### Useful links:
  - [NodeJS client for google API](https://github.com/googleapis/google-api-nodejs-client)
  - [Useful info on authenticating service accounts for apps use](https://github.com/googleapis/google-api-nodejs-client/issues/1884)
@@ -88,8 +88,21 @@ yarn run build
 ```
 and then you can run the project using 
  ```
-yarn run start
+yarn start
 ```
+
+## Deployment
+You can deploy the service using terraform. The terraform files are configured to create a cloudwatch cron event that 
+triggers once per day to run a sync lambda function. 
+
+The terraform scripts have variables for credentials to be used within the lambda function.
+
+Run the following scripts to build and deploy. The lambda package will be created in a folder called ```dist-zip```.
+```shell script
+yarn run build
+yarn run package
+terraform apply
+``` 
 
 ## Test
 Tests are written and run using jest.

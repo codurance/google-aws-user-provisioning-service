@@ -29,4 +29,4 @@ async function run(){
     await groupMapper.mapGroupsFromGoogleToAws();
 }
 
-run();
+exports.handler = run;

@@ -117,3 +117,7 @@ dist
 
 
 .idea
+dist-zip
+*.tfstate
+*.tfstate.backup
+deployment/.terraform

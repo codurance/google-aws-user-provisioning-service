@@ -1,7 +1,7 @@
 {
   "name": "user-sync-lambda",
   "version": "1.0.0",
-  "main": "src/Index.ts",
+  "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "googleapis": "^57.0.0",
@@ -12,7 +12,8 @@
     "test-watch": "node node_modules/jest/bin/jest.js --watch",
     "build": "node node_modules/typescript/bin/tsc",
     "build-watch": "node node_modules/typescript/bin/tsc --watch",
-    "start": "node dist"
+    "start": "node -e require('./dist').handler()",
+    "package": "mkdir dist-zip & node node_modules/copy-node-modules/bin/copy-node-modules.js . dist & cd dist & node ../node_modules/bestzip/bin/cli.js ../dist-zip/package.zip * & cd .."
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
@@ -23,8 +24,9 @@
     "@types/jest": "^26.0.7",
     "@types/node": "^14.0.26",
     "babel-jest": "^26.1.0",
+    "bestzip": "^2.1.6",
+    "copy-node-modules": "^1.1.1",
     "jest": "^26.1.0",
-    "jszip": "^3.5.0",
     "ts-jest": "^26.1.4",
     "typescript": "^3.9.7"
   }
