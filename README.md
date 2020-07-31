@@ -3,7 +3,7 @@ Google does not support (as of 07/2020) auto provisioning of accounts on custom 
 In order to use SSO with Google apps as the user source it must be added as a custom SAML app. The users have to be created 
 inside AWS SSO with the usernames set to the login email address of
 the relevant Google apps user. AWS does support auto provisioning through the use of 
-its SCIM API. 
+its [SCIM](https://tools.ietf.org/html/rfc7644) API. 
 
 There is no AWS SSO API for creating users, only the SCIM API is supported.
 
