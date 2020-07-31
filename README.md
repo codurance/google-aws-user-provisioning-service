@@ -5,11 +5,11 @@ inside AWS SSO with the usernames set to the login email address of
 the relevant Google apps user. AWS does support auto provisioning through the use of 
 its SCIM API. 
 
-There is no AWS SSO API for creating users, only the SCIM api is supported.
+There is no AWS SSO API for creating users, only the SCIM API is supported.
 
 This tool uses the GSuite Admin API (specifically the directory API) to load 
 the users, groups, and group memberships from google and then uploads the data 
-into AWS through the SCIM api.
+into AWS through the SCIM API.
 
 # Google authentication
 Accessing the GSuite Admin API is slightly different to a regular Google Cloud Platform API.
