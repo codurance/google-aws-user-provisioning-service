@@ -5,6 +5,7 @@ import {IAwsGroupRepository} from "./aws/groups/IAwsGroupRepository";
 import {IGoogleGroupSource} from "./google/groups/IGoogleGroupSource";
 import {IGoogleGroup} from "./google/groups/IGoogleGroup";
 import {IAwsGroup} from "./aws/groups/IAwsGroup";
+import assert from "assert";
 
 export class GroupMapper {
     constructor(
@@ -65,6 +66,8 @@ export class GroupMapper {
             for (let member of members) {
                 let thisMember = allAwsUsers.find(u => u.email === member.email);
                 await this.logger.logInfo(`Added ${thisMember.email} to group ${matchingAwsGroup.displayName}.`)
+                assert(thisMember.id);
+                assert(matchingAwsGroup.id);
                 await this.awsGroupRepo.addMemberToGroup(thisMember.id, matchingAwsGroup.id);
             }
         }

@@ -81,6 +81,7 @@ describe('AWS User repository', () => {
         expect(firstUser.lastName).toEqual('Smith');
         expect(firstUser.displayName).toEqual('Johnny Smith');
         expect(firstUser.email).toEqual('john@smith.com');
+        expect(firstUser.id).toEqual('JOHN_ID');
 
         const requestInfo = fetcher.assertOneRequestAndReturn();
         expect(requestInfo.url).toEqual('HTTP://SCIMURL/Users?itemsPerPage=1000');

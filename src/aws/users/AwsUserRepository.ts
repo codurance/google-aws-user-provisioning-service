@@ -4,6 +4,7 @@ import {IAwsUserRepository} from "./IAwsUserRepository";
 import {IAwsConfig} from "../IAwsConfig";
 import {IAwsGroup} from "../groups/IAwsGroup";
 import {IFetcher} from "../../IFetcher";
+import assert from "assert";
 const fetch = require('node-fetch');
 const Headers = fetch.Headers;
 /*
@@ -14,6 +15,8 @@ const Headers = fetch.Headers;
 */
 export class AwsUserRepository implements IAwsUserRepository {
     constructor(private awsConfig: IAwsConfig, private fetcher: IFetcher) {
+        assert(awsConfig.scimToken);
+        assert(awsConfig.scimUrl);
     }
 
     async createUser(firstName: string, lastName: string, displayName: string, email: string): Promise<ICreateUserResult> {
@@ -63,12 +66,16 @@ export class AwsUserRepository implements IAwsUserRepository {
         let responseText = response.body;
 
         const responseBody = JSON.parse(responseText);
-        const users: IAwsUser[] = responseBody.Resources.map((u: any) => ({
-            firstName: u.name.givenName,
-            lastName: u.name.familyName,
-            displayName: u.displayName,
-            email: u.userName
-        }));
+        const users: IAwsUser[] = responseBody.Resources.map((u: any) => {
+            let user: IAwsUser = {
+                firstName: u.name.givenName,
+                lastName: u.name.familyName,
+                displayName: u.displayName,
+                email: u.userName,
+                id: u.id
+            };
+            return user;
+        });
         return users;
     }
 
