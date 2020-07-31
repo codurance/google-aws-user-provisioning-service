@@ -19,11 +19,17 @@ EOF
 
 resource "aws_lambda_function" "google_aws_user_sync" {
   filename = var.lambda_function_source_zip_file_path
-  function_name = "google-to-aws-user-provision"
+  function_name = var.lambda_function_name
   role = aws_iam_role.iam_for_lambda.arn
   handler = "index.handler"
   source_code_hash = filebase64sha256(var.lambda_function_source_zip_file_path)
   runtime = "nodejs12.x"
+
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_cloudwatch_log_group.create_user_sync_lambda_log_group,
+  ]
 
   environment {
     variables = {
@@ -34,6 +40,16 @@ resource "aws_lambda_function" "google_aws_user_sync" {
       GOOGLE_APP_ORGANISATION_ID = var.google_app_organisation_id
     }
   }
+}
+
+resource "aws_cloudwatch_log_group" "create_user_sync_lambda_log_group" {
+  name              = "/aws/lambda/${var.lambda_function_name}"
+  retention_in_days = 14
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_cloudwatch_event_rule" "trigger_aws_user_sync" {
