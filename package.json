@@ -4,25 +4,28 @@
   "main": "src/Index.ts",
   "license": "MIT",
   "dependencies": {
-    "@babel/types": "^7.10.5",
-    "@types/gapi": "^0.0.39",
-    "@types/jest": "^26.0.7",
-    "@types/node": "^14.0.26",
     "googleapis": "^57.0.0",
-    "jest": "^26.1.0",
-    "jest-fetch-mock": "^3.0.3",
-    "node-fetch": "^2.6.0",
-    "request": "^2.88.2",
-    "ts-jest": "^26.1.4",
-    "typescript": "^3.9.7"
+    "node-fetch": "^2.6.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "node node_modules/jest/bin/jest.js",
+    "test-watch": "node node_modules/jest/bin/jest.js --watch",
+    "build": "node node_modules/typescript/bin/tsc",
+    "build-watch": "node node_modules/typescript/bin/tsc --watch",
+    "start": "node dist"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-typescript": "^7.10.4",
-    "babel-jest": "^26.1.0"
+    "@babel/types": "^7.10.5",
+    "@types/gapi": "^0.0.39",
+    "@types/jest": "^26.0.7",
+    "@types/node": "^14.0.26",
+    "babel-jest": "^26.1.0",
+    "jest": "^26.1.0",
+    "jszip": "^3.5.0",
+    "ts-jest": "^26.1.4",
+    "typescript": "^3.9.7"
   }
 }

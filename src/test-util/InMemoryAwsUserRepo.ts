@@ -1,7 +1,6 @@
 import {IAwsUserRepository} from "../aws/users/IAwsUserRepository";
 import {IAwsUser} from "../aws/users/IAwsUser";
 import {ICreateUserResult} from "../aws/users/ICreateUserResult";
-import {IAwsGroup} from "../aws/groups/IAwsGroup";
 
 export class InMemoryAwsUserRepo implements IAwsUserRepository {
     public allUsers: IAwsUser[] = [];

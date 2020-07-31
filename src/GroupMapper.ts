@@ -1,5 +1,4 @@
 import {IAwsUserRepository} from "./aws/users/IAwsUserRepository";
-import {IGoogleUserSource} from "./google/users/IGoogleUserSource";
 import {ILogger} from "./logging/ILogger";
 import {IAwsGroupRepository} from "./aws/groups/IAwsGroupRepository";
 import {IGoogleGroupSource} from "./google/groups/IGoogleGroupSource";
@@ -47,7 +46,7 @@ export class GroupMapper {
             }
 
             await this.logger.logInfo(`Google group ${googleGroup.name} does not exist in AWS, creating.`);
-            await this.awsGroupRepo.createGroup(googleGroup.name, googleGroup.description);
+            await this.awsGroupRepo.createGroup(googleGroup.name);
         }
     }
 
@@ -62,9 +61,11 @@ export class GroupMapper {
         for (let googleGroup of groupsForTransfer) {
             let members = await this.googleRepo.getGroupMemberships(googleGroup.id);
             let matchingAwsGroup = awsGroups.find(g => g.displayName === googleGroup.name);
+            assert(matchingAwsGroup);
             await this.awsGroupRepo.removeGroupMembers(matchingAwsGroup.id);
             for (let member of members) {
                 let thisMember = allAwsUsers.find(u => u.email === member.email);
+                assert(thisMember);
                 await this.logger.logInfo(`Added ${thisMember.email} to group ${matchingAwsGroup.displayName}.`)
                 assert(thisMember.id);
                 assert(matchingAwsGroup.id);

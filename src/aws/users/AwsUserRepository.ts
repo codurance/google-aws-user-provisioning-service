@@ -2,11 +2,8 @@ import {IAwsUser} from "./IAwsUser";
 import {ICreateUserResult} from "./ICreateUserResult";
 import {IAwsUserRepository} from "./IAwsUserRepository";
 import {IAwsConfig} from "../IAwsConfig";
-import {IAwsGroup} from "../groups/IAwsGroup";
 import {IFetcher} from "../../IFetcher";
 import assert from "assert";
-const fetch = require('node-fetch');
-const Headers = fetch.Headers;
 /*
     This repo implementation uses the SCIM protocol described at
     Ref: https://tools.ietf.org/html/rfc7644

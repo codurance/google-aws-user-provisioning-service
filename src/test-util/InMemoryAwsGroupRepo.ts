@@ -5,7 +5,7 @@ export class InMemoryAwsGroupRepo implements IAwsGroupRepository{
     public allGroups: IAwsGroup[] = [];
     public newMemberships: {userId: string, groupId: string}[] = [];
 
-    async createGroup(name: string, description: string): Promise<string> {
+    async createGroup(name: string): Promise<string> {
         let id = Math.random().toString();
         this.allGroups.push({
             displayName: name,

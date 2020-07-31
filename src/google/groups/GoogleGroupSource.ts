@@ -2,8 +2,7 @@ import {IGoogleApiConfig} from "../IGoogleApiConfig"
 import {getGoogleDirectoryService} from "../GetGoogleDirectoryService";
 import {IGoogleGroupSource} from "./IGoogleGroupSource";
 import {IGoogleGroupMembership} from "./IGoogleGroupMembership";
-
-const {google} = require('googleapis');
+import assert from "assert";
 
 export class GoogleGroupSource implements IGoogleGroupSource {
     constructor(private googleApiConfig: IGoogleApiConfig) {
@@ -18,6 +17,7 @@ export class GoogleGroupSource implements IGoogleGroupSource {
     async getGroups(): Promise<any> {
         const service = getGoogleDirectoryService(this.googleApiConfig);
         let groupResult = await service.groups.list(this.getCustomerParam());
+        assert(groupResult.data.groups);
         return groupResult.data.groups.map((g: any) => ({
             id: g.id,
             name: g.name,

@@ -24,7 +24,7 @@ export class AwsGroupRepository implements IAwsGroupRepository {
         return groups;
     }
 
-    async createGroup(name: string, description: string): Promise<string> {
+    async createGroup(name: string): Promise<string> {
         let scimCreateGroup = {
             schemas: [
                 'urn:ietf:params:scim:schemas:core:2.0:Group'
@@ -54,7 +54,7 @@ export class AwsGroupRepository implements IAwsGroupRepository {
 
     public async deleteGroup(id: string): Promise<void> {
         let targetUrl = `${this.awsConfig.scimUrl}Groups/${id}`;
-        let result = await this.fetcher.fetch({
+        await this.fetcher.fetch({
             url: targetUrl,
             method: 'DELETE',
             headers: this.getAuthHeaders()

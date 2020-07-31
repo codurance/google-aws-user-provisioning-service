@@ -59,3 +59,43 @@ AWS Authentication is pretty simple, it does not use IAM users as the API being 
 To enable the SCIM API go to AWS SSO => Settings => Automatic Provisioning => Enable.
 
 A screen will come up providing an API endpoint and an API token to use in requests. This must be configured for the application.
+
+# Local development
+This is a typescript project designed to be compiled and run in node, this makes it easy to deploy as a lambda function.
+
+## Environment set up
+First you will need to set up the following environment variables
+
+```
+AWS_SCIM_TOKEN
+AWS_SCIM_URL
+GOOGLE_AUTHENTICATION_SUBJECT
+GOOGLE_SERVICE_ACCOUNT_BASE64_KEY_FILE
+GOOGLE_APP_ORGANISATION_ID
+```
+
+## Running
+Restore packages using yarn.
+```shell script
+yarn install
+```
+To run locally you will need to compile the project using 
+```
+yarn run build
+```
+and then you can run the project using 
+ ```
+yarn run start
+```
+
+## Test
+Tests are written and run using jest.
+
+```shell script
+yarn run test
+```
+
+Run jest watch using
+```shell script
+yarn run test-watch
+```
