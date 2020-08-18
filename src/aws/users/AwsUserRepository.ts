@@ -4,11 +4,14 @@ import {IAwsUserRepository} from "./IAwsUserRepository";
 import {IAwsConfig} from "../IAwsConfig";
 import {IFetcher} from "../../IFetcher";
 import assert from "assert";
+
 /*
     This repo implementation uses the SCIM protocol described at
     Ref: https://tools.ietf.org/html/rfc7644
     Schemas: https://tools.ietf.org/html/rfc7643#section-8.1
     AWS SCIM: https://docs.aws.amazon.com/singlesignon/latest/userguide/provision-automatically.html#how-to-with-scim
+    Note: The AWS SCIM api has many bugs and many of the features specified in the RFC are not supported.
+    Users cannot be paginated correctly and sorting parameters are ignored
 */
 export class AwsUserRepository implements IAwsUserRepository {
     constructor(private awsConfig: IAwsConfig, private fetcher: IFetcher) {
@@ -52,8 +55,9 @@ export class AwsUserRepository implements IAwsUserRepository {
         };
     }
 
-    async getAllUsers(): Promise<IAwsUser[]> {
-        let targetUrl = this.awsConfig.scimUrl + 'Users?itemsPerPage=1000';
+    // The API has bugs that mean you can't get more than 50 users and you can choose which 50 you get
+    async get50RandomUsers(): Promise<IAwsUser[]> {
+        let targetUrl = this.awsConfig.scimUrl + 'Users';
         const response = await this.fetcher.fetch({
             url: targetUrl,
             method: 'GET',
@@ -90,5 +94,29 @@ export class AwsUserRepository implements IAwsUserRepository {
             method: 'DELETE',
             headers: this.getAuthHeaders()
         });
+    }
+
+    async getUserByEmail(email: string): Promise<IAwsUser | null> {
+        let targetUrl = `${this.awsConfig.scimUrl}Users?filter=userName eq "${email}"`;
+        const response = await this.fetcher.fetch({
+            url: targetUrl,
+            method: 'GET',
+            headers: this.getAuthHeaders()
+        });
+
+        let responseText = response.body;
+
+        const responseBody = JSON.parse(responseText);
+        let userFromAws = responseBody.Resources[0];
+        if(!userFromAws)
+            return null;
+        let user: IAwsUser = {
+            firstName: userFromAws.name.givenName,
+            lastName: userFromAws.name.familyName,
+            displayName: userFromAws.displayName,
+            email: userFromAws.userName,
+            id: userFromAws.id
+        };
+        return user;
     }
 }

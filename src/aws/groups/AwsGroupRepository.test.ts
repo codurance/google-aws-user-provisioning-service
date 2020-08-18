@@ -15,7 +15,7 @@ describe('AwsGroupRepository', () => {
     });
 
     test('can get all groups', async () => {
-        fetcher.givenTheNextResponseIs({
+        fetcher.queueUpNextResponse({
             totalResults: 1,
             itemsPerPage: 1,
             startIndex: 1,
@@ -52,11 +52,11 @@ describe('AwsGroupRepository', () => {
     });
 
     test('can create group', async () => {
-        fetcher.givenTheNextResponseIs({
+        fetcher.queueUpNextResponse({
             id: "NEW_ID",
         });
 
-        let newGroupId = await repo.createGroup('Admins', 'Admin group');
+        let newGroupId = await repo.createGroup('Admins');
         expect(newGroupId).toEqual("NEW_ID");
 
         const requestInfo = fetcher.assertOneRequestAndReturn();
@@ -71,6 +71,7 @@ describe('AwsGroupRepository', () => {
     });
 
     test('can delete group', async () => {
+        fetcher.queueUpNextResponse({});
         await repo.deleteGroup('test');
         const requestInfo = fetcher.assertOneRequestAndReturn();
         expect(requestInfo.url).toEqual('HTTP://SCIMURL/Groups/test');
@@ -79,30 +80,36 @@ describe('AwsGroupRepository', () => {
     });
 
     function assertGroupMemberOperation(op: string) {
-        const requestInfo = fetcher.assertOneRequestAndReturn();
-        expect(requestInfo.url).toEqual('HTTP://SCIMURL/Groups/groupId');
-        expect(requestInfo.method).toEqual('PATCH');
-        let body = JSON.parse(requestInfo.body);
-        expect(body.Operations.length).toEqual(1);
+        let body = assertPatchWasMadeToGroupAndReturnBody();
         expect(body.Operations[0].op).toEqual(op);
         expect(body.Operations[0].path).toEqual('members');
         expect(body.Operations[0].value.length).toEqual(1);
         expect(body.Operations[0].value[0].value).toEqual('userId');
-        assertAuthWasPassed(requestInfo);
     }
 
     test('can add member to group', async () => {
+        fetcher.queueUpNextResponse({});
+
         await repo.addMemberToGroup('userId', 'groupId');
         assertGroupMemberOperation('add');
     });
 
-    test('can remove all group members', async () => {
-        await repo.removeGroupMembers('groupId');
+    function assertPatchWasMadeToGroupAndReturnBody() {
         const requestInfo = fetcher.assertOneRequestAndReturn();
         expect(requestInfo.url).toEqual('HTTP://SCIMURL/Groups/groupId');
         expect(requestInfo.method).toEqual('PATCH');
-        let body = JSON.parse(requestInfo.body);
+        expect(requestInfo.body).toBeTruthy();
+        let body = JSON.parse(requestInfo.body as string);
         expect(body.Operations.length).toEqual(1);
+        assertAuthWasPassed(requestInfo);
+        return body;
+    }
+
+    test('can remove all group members', async () => {
+        fetcher.queueUpNextResponse({});
+
+        await repo.removeGroupMembers('groupId');
+        let body = assertPatchWasMadeToGroupAndReturnBody();
         expect(body.Operations[0].op).toEqual('remove');
         expect(body.Operations[0].path).toEqual('members');
     });

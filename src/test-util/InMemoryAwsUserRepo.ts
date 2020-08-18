@@ -20,12 +20,17 @@ export class InMemoryAwsUserRepo implements IAwsUserRepository {
         }
     }
 
-    async getAllUsers(): Promise<IAwsUser[]> {
-        return [...this.allUsers];
-    }
-
     async deleteUser(id: string): Promise<void> {
         this.allUsers = this.allUsers.filter(u => u.id !== id);
+    }
+
+    async getUserByEmail(email: string): Promise<IAwsUser | null> {
+        let foundUser = this.allUsers.find(u => u.email === email);
+        return foundUser || null;
+    }
+
+    async get50RandomUsers(): Promise<IAwsUser[]> {
+        return this.allUsers.slice(0, Math.max(this.allUsers.length-1, 50))
     }
 
 }

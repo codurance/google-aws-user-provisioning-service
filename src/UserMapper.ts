@@ -1,6 +1,7 @@
 import {IAwsUserRepository} from "./aws/users/IAwsUserRepository";
 import {IGoogleUserSource} from "./google/users/IGoogleUserSource";
 import {ILogger} from "./logging/ILogger";
+import {IAwsUser} from "./aws/users/IAwsUser";
 
 export class UserMapper {
     constructor(private awsUserRepo: IAwsUserRepository,
@@ -10,13 +11,17 @@ export class UserMapper {
 
     public async mapUsersFromGoogleToAws(): Promise<void> {
         const googleUsers = await this.googleUserRepo.getUsers();
-        const allAwsUsers = await this.awsUserRepo.getAllUsers();
-        for(let user of googleUsers) {
-            if(allAwsUsers.find(u => u.email === user.primaryEmail)){
-                await this.logger.logInfo(`Skipping ${user.fullName} because the AWS user already exists.`);
-                continue;
-            }
+        let random50AwsUsers: IAwsUser[];
+        do {
+            random50AwsUsers = await this.awsUserRepo.get50RandomUsers();
 
+            for(let user of random50AwsUsers){
+                await this.logger.logInfo(`Deleting existing user ${user.email}.`);
+                await this.awsUserRepo.deleteUser(user.id);
+            }
+        } while(random50AwsUsers.length > 0);
+
+        for(let user of googleUsers) {
             await this.logger.logInfo(`Creating user ${user.fullName} in AWS`);
             await this.awsUserRepo.createUser(
                 user.firstName,
@@ -24,14 +29,6 @@ export class UserMapper {
                 user.fullName,
                 user.primaryEmail
             );
-        }
-
-        for (let awsUser of allAwsUsers) {
-            let matchingGoogleUser = googleUsers.find(u => u.primaryEmail === awsUser.email);
-            if(matchingGoogleUser)
-                continue;
-            await this.logger.logInfo(`The AWS user ${awsUser.displayName} does not exist google, deleting.`)
-            await this.awsUserRepo.deleteUser(awsUser.id);
         }
     }
 }

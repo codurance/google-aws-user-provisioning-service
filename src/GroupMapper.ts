@@ -56,7 +56,6 @@ export class GroupMapper {
 
     private async createMembershipsFromGoogle(googleGroups: IGoogleGroup[]) {
         let awsGroups = await this.awsGroupRepo.getAllGroups();
-        let allAwsUsers = await this.awsUserRepo.getAllUsers();
         let groupsForTransfer = googleGroups.filter(this.isGroupAwsGroup);
         for (let googleGroup of groupsForTransfer) {
             let members = await this.googleRepo.getGroupMemberships(googleGroup.id);
@@ -64,9 +63,9 @@ export class GroupMapper {
             assert(matchingAwsGroup);
             await this.awsGroupRepo.removeGroupMembers(matchingAwsGroup.id);
             for (let member of members) {
-                let thisMember = allAwsUsers.find(u => u.email === member.email);
-                assert(thisMember);
-                await this.logger.logInfo(`Added ${thisMember.email} to group ${matchingAwsGroup.displayName}.`)
+                let thisMember = await this.awsUserRepo.getUserByEmail(member.email);
+                assert(thisMember, `Group ${matchingAwsGroup.displayName} Member: ${member.email}`);
+                await this.logger.logInfo(`Added ${thisMember.email} to group ${matchingAwsGroup.displayName}.`);
                 assert(thisMember.id);
                 assert(matchingAwsGroup.id);
                 await this.awsGroupRepo.addMemberToGroup(thisMember.id, matchingAwsGroup.id);

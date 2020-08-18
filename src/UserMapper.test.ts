@@ -49,17 +49,6 @@ describe('UserMapper', async() => {
         expect(awsUserRepo.allUsers[1].email).toBe('jane@doe.com');
     });
 
-    test('given the user already exists in AWS it does not try to create it again', async () => {
-        googleUserSource.allUsers = [googleUser('john@smith.com', 'Johnny')];
-        awsUserRepo.allUsers = [awsUser('john@smith.com')];
-
-        await userMapper.mapUsersFromGoogleToAws();
-
-        expect(logger.loggedMessages[0]).toEqual('Skipping Johnny because the AWS user already exists.');
-        expect(awsUserRepo.allUsers.length).toBe(1);
-        expect(awsUserRepo.allUsers[0].email).toBe('john@smith.com');
-    });
-
     test('given a user already exists in AWS it but the email does not match it still adds', async () => {
         googleUserSource.allUsers = [
             googleUser('jane@doe.com'),
@@ -78,7 +67,20 @@ describe('UserMapper', async() => {
 
         await userMapper.mapUsersFromGoogleToAws();
 
-        expect(logger.loggedMessages[0]).toEqual('The AWS user Jane does not exist google, deleting.');
+        expect(logger.loggedMessages[0]).toEqual('Deleting existing user jane@doe.com.');
+        expect(awsUserRepo.allUsers.length).toBe(0);
+    });
+
+    test('given more than 50 users exists in AWS but not in google it deletes all the users', async () => {
+        awsUserRepo.allUsers = [];
+        for(let i = 0; i < 232; i++) {
+            awsUserRepo.allUsers.push(awsUser('jane@doe.com' + i, 'Jane' + i));
+        }
+
+        await userMapper.mapUsersFromGoogleToAws();
+
+        expect(logger.loggedMessages[0]).toEqual('Deleting existing user jane@doe.com0.');
+        expect(logger.loggedMessages[231]).toEqual('Deleting existing user jane@doe.com231.');
         expect(awsUserRepo.allUsers.length).toBe(0);
     });
 
