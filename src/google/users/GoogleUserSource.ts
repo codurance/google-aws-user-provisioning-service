@@ -10,7 +10,8 @@ export class GoogleUserSource implements IGoogleUserSource {
 
     public async getUsers(): Promise<IGoogleUser[]> {
         const service = getGoogleDirectoryService(this.googleApiConfig);
-        let usersResult = await service.users.list(this.getCustomerParam());
+        let params = { ...this.getCustomerParam(), maxResults:500, orderBy: 'email' };
+        let usersResult = await service.users.list(params);
         assert(usersResult.data.users);
         const users: IGoogleUser[] = usersResult.data.users.map((u: any) => ({
             primaryEmail: u.primaryEmail,
